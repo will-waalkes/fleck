@@ -30,7 +30,7 @@ class ActiveStar:
     optional planetary transit models and spot occultations.
     """
 
-    n_mc = 10_000  # Number of Monte Carlo samples to use when computing planet+spot overlap
+    n_mc = 2_000  # Number of Monte Carlo samples to use when computing planet+spot overlap
     key = random.PRNGKey(0)  # random key seed
 
     def __init__(
@@ -568,6 +568,90 @@ class ActiveStar:
 
         return monte_carlo_occulted_area
 
+    # def plot_star(self, t0, rp, a, inclination,
+    #               ecc=0, t0_rot=0, multiply_radii=1,
+    #               ax=None, annotate=False):
+    #     """
+    #     Plot a 2D representation of the star and transit chord.
+
+    #     Parameters
+    #     ----------
+    #     t0 : float
+    #         Mid-transit time
+    #     rp : float
+    #         Exoplanet radius in units of stellar radii
+    #     a : float
+    #         Planetary semi-major axis in units of stellar radii
+    #     inclination : float
+    #         Planetary orbital inclination [radians]
+    #     ecc : float
+    #         Orbital eccentricity, default is zero.
+    #     t0_rot : float
+    #         Zero-point in time for stellar rotation, default is zero
+    #     multiply_radii : float
+    #         Visually represent scaled-up active regions where the radii are increased
+    #         by factor ``multiply_radii``, default is one.
+    #     ax : matplotlib.axes.Axes
+    #         Add the visualization to this matplotlib axis
+    #     annotate : bool
+    #         Add a text label with active region indices and temperatures
+    #         to the visualization
+    #     """
+
+    #     if ax is None:
+    #         ax = plt.gca()
+
+    #     log_temps = np.log10(self.temperature)
+
+    #     def temp_cmap(x):
+    #         return to_hex(
+    #             plt.cm.YlOrRd_r(
+    #                 (np.log10(x) - min(log_temps)) /
+    #                 (max(log_temps) - min(log_temps)) * 0.6 + 0.4
+    #             )
+    #         )
+
+    #     star = plt.Circle((0, 0), 1, color=to_hex(temp_cmap(self.T_eff)))
+    #     ax.add_patch(star)
+    #     ax.set(xlim=[-1.05, 1.05], ylim=[-1.05, 1.05])
+
+    #     squeezed_coords = list(map(
+    #         jnp.squeeze, self.spot_coords(times=jnp.array([t0]), t0_rot=t0_rot)
+    #     ))
+    #     for i, (x, y, z, _, _, _, _, angle) in enumerate(zip(*squeezed_coords)):
+    #         if z < 0:
+    #             rsq = x ** 2 + y ** 2
+
+    #             short = np.sqrt(1 - rsq)
+    #             angle = -np.degrees(np.arctan2(y, x))
+    #             ell = Ellipse(
+    #                 (y, x), width=multiply_radii * 2 * self.rad[i],
+    #                 height=multiply_radii * 2 * self.rad[i] * short, angle=angle,
+    #                 facecolor=temp_cmap(self.temperature[i]), edgecolor='k'
+    #             )
+    #             ax.add_patch(ell)
+
+    #             if annotate:
+    #                 ax.annotate(
+    #                     f"{i+1}: {int(self.temperature[i])} K", (y, x),
+    #                     va='center', ha='center', fontsize=6
+    #                 )
+
+    #     ax.set_aspect('equal')
+
+    #     b = (a * np.cos(inclination) * (1 - ecc ** 2) /
+    #          (1 + ecc * np.sin(np.pi / 2)))
+
+    #     if hasattr(rp, '__len__'):
+    #         rp = rp.mean()
+
+    #     planet_lower_extent = -b - rp
+    #     planet_upper_extent = -b + rp
+    #     ax.axhline(planet_lower_extent, color='gray', ls='--')
+    #     ax.axhline(planet_upper_extent, color='gray', ls='--')
+    #     ax.axis('off')
+
+    #     return ax
     def plot_star(self, t0, rp, a, inclination,
                   ecc=0, t0_rot=0, multiply_radii=1,
                   ax=None, annotate=False):
@@ -605,9 +689,9 @@ class ActiveStar:
 
         def temp_cmap(x):
             return to_hex(
-                plt.cm.YlOrRd_r(
-                    (np.log10(x) - min(log_temps)) /
-                    (max(log_temps) - min(log_temps)) * 0.6 + 0.4
+                plt.cm.inferno(
+                    (np.log10(x) - 3.44) /
+                    (3.74 - 3.44) * 0.6 + 0.4
                 )
             )
 
@@ -627,7 +711,7 @@ class ActiveStar:
                 ell = Ellipse(
                     (y, x), width=multiply_radii * 2 * self.rad[i],
                     height=multiply_radii * 2 * self.rad[i] * short, angle=angle,
-                    facecolor=temp_cmap(self.temperature[i]), edgecolor='k'
+                    facecolor=temp_cmap(self.temperature[i]), edgecolor='k',alpha=0.8
                 )
                 ax.add_patch(ell)
 

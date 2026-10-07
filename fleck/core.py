@@ -13,6 +13,26 @@ import matplotlib.pyplot as plt
 __all__ = ['Star', 'generate_spots']
 
 
+# def limb_darkening(u_ld, r):
+#     """
+#     Quadratic limb darkening function.
+
+#     Parameters
+#     ----------
+#     u_ld : list
+#         Quadratic limb-darkening parameters
+#     r : float or `~numpy.ndarray`
+#         Radius in units of stellar radii.
+
+#     Returns
+#     -------
+#     f : float or `~numpy.ndarray`
+#         Flux at ``r``.
+#     """
+#     u1, u2 = u_ld
+#     mu = np.sqrt(1 - r**2)
+#     return (1 - u1 * (1 - mu) - u2 * (1 - mu)**2) / (1 - u1/3 - u2/6) / np.pi
+
 def limb_darkening(u_ld, r):
     """
     Quadratic limb darkening function.
@@ -20,7 +40,7 @@ def limb_darkening(u_ld, r):
     Parameters
     ----------
     u_ld : list
-        Quadratic limb-darkening parameters
+        4-param non-linear limb-darkening parameters
     r : float or `~numpy.ndarray`
         Radius in units of stellar radii.
 
@@ -29,9 +49,13 @@ def limb_darkening(u_ld, r):
     f : float or `~numpy.ndarray`
         Flux at ``r``.
     """
-    u1, u2 = u_ld
+    u1, u2, u3, u4 = u_ld
     mu = np.sqrt(1 - r**2)
-    return (1 - u1 * (1 - mu) - u2 * (1 - mu)**2) / (1 - u1/3 - u2/6) / np.pi
+
+    numerator = (1 - u1*(1-mu**(1/2)) - u2*(1-mu) - u3*(1-mu**(3/2)) - u4*(1-mu**2) )
+    denominator = (1 - u1*(1/5) - u2*(1/3) - u3*(3/7) - u4*(1/2) ) * np.pi
+
+    return numerator/denominator
 
 
 def limb_darkening_normed(u_ld, r):
@@ -665,8 +689,8 @@ class Star(object):
 
                 # Compute the upper and lower envelopes of the transit chord in
                 # the "observer oriented" reference frame (Fabrycky & Winn 2009)
-                planet_lower_extent = -b-p.rp
-                planet_upper_extent = -b+p.rp
+                planet_lower_extent = b-p.rp
+                planet_upper_extent = b+p.rp
 
                 ax.axhline(planet_lower_extent, color=color, ls='--')
                 ax.axhline(planet_upper_extent, color=color, ls='--')
@@ -677,8 +701,8 @@ class Star(object):
 
             # Compute the upper and lower envelopes of the transit chord in the
             # "observer oriented" reference frame (Fabrycky & Winn 2009)
-            planet_lower_extent = -b-planet.rp
-            planet_upper_extent = -b+planet.rp
+            planet_lower_extent = b-planet.rp
+            planet_upper_extent = b+planet.rp
 
             ax.axhline(planet_lower_extent, color='gray', ls='--')
             ax.axhline(planet_upper_extent, color='gray', ls='--')
